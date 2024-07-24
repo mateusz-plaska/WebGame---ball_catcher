@@ -1,0 +1,338 @@
+<!DOCTYPE HTML>
+<html lang="pl">
+<head>
+	
+	<meta charset="utf-8"/>
+	<meta name="description" content="Gra - odbij piłkę">
+	<meta keywords="gra,bramkarz,piłka,złap piłkę,odbij piłkę">
+	<meta author="Płaska Mateusz"/>
+	
+	<link rel="shortcut icon" href="paletka.jpg" type="image/jpg"/>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<title>Gra bramkarz</title>
+	
+	<style>
+	*{
+		margin: 0;
+		font-family: 'Roboto Mono', monospace;
+		box-sizing: border-box;
+	}
+	
+	body
+	{
+		background-color: darkcyan; 
+	}
+	
+	#main
+	{
+		max-width:1000px;
+		margin: 0 auto 0 auto;
+		background-color: #ddb;
+	}
+	
+	#plansza
+	{
+		background-color: grey;
+		margin: 20px 30px;
+		border: 3px solid green;
+	}
+	
+	#title
+	{
+		text-align: center;
+		padding-top: 25px;
+	}
+	
+	#navigation
+	{
+		padding-left: 35px;
+		color: darkblue;
+	}
+	
+	#punkty
+	{
+		padding-left: 35px;
+		padding-bottom: 20px;
+	}
+	
+	#info
+	{
+		padding-left: 35px;
+		padding-bottom: 40px;
+	}
+	
+	#przycisk
+	{
+		margin-left: 300px;
+		margin-top: 30px;
+		background-color: red;
+	}
+	
+	#napis
+	{
+		color: darkblue;
+	}
+	
+	#rekord
+	{
+		padding-left: 35px;
+		padding-bottom: 40px;
+	}
+	
+	#music
+	{
+		max-width:1000px;
+		margin: 50px auto 0 auto;
+		padding-left: 25px;
+	}
+	
+	#nick
+	{
+		margin-left: 35px;
+		margin-bottom: 30px;
+	}
+	
+	#nick-tekst
+	{
+		padding-left: 35px;
+	}
+	
+	</style>
+	
+</head>
+<body onLoad="start()" onkeydown="obsluga_klawiatury(event); return false;">
+	
+	<div id="main">
+	
+	<strong>
+	
+	<h1 id="title"> 
+	Gra bramkarz
+	</h1>
+	
+	<br/><br/>
+	
+	<div id="navigation">
+	
+	Instrukcja:
+	<br/>*Ruszaj rakietką
+	<br/>*Staraj się złapać piłkę <br/>
+	
+	</div>
+	
+	</strong>
+	
+	<button id="przycisk" onclick="StartGry()">
+	<p id="napis">START!</p>
+	</button>
+	
+	<canvas id="plansza" width="600px" height="300px">
+	Gra bramkarz
+	</canvas>
+
+	<h1 id="punkty"> Wynik: 0</h1>
+	<h2 id="info"> </h2>
+	<h2 id="rekord"> Twój dotychczasowy rekord: 0 </h2>   						
+	
+	<!-- <h4 id="nick-tekst"> Jeśli chcesz aby twoj rekord znalazł się w najlepszych wynikach wpisz swój nick : </h4> -->
+	
+	<!-- <br> -->
+	
+	<!-- <form > 														<!-- tabela best wynikow --> 
+	
+	<!-- <input id="nick" type="text" name="" maxlength="30"> -->
+		
+	<!-- </form> 														<!-- dezaktywowac przesuwanie suwaka strzalkami --> 
+									
+	</div>
+											<!-- poprawic predkosci paletki i pilki przy koljenym klikaniu przycisku -->
+											<!-- zwiekszać predkosc pilki do pewnego momentu, a potem zmienijaszac tylko jej rozmiar-->									
+	<div id = "music">
+	
+	<strong> Włącz muzykę! Zrelaksuj się! </strong>
+	
+	<br><br>
+	
+	<audio autoplay controls loop>
+	<source src="muzyka_do_gier.ogg" type="audio/ogg">
+	<source src="muzyka_do_gier.mp3" type="audio/mpeg">
+	Twoja przeglądarka nie obsługuje elemntów audio.
+	</audio>
+	
+	</div>
+	
+	<script type="text/javascript">
+	 
+	 var plansza_gry = document.getElementById("plansza");
+	 var rysowanie =  plansza_gry.getContext("2d");
+
+	 var pilka_srodek_x = plansza_gry.width - 40;
+	 var pilka_srodek_y = plansza_gry.height / 2;
+	 var pilka_promien = 15;
+	 var pilka_predkosc_x = 1;
+	 var pilka_predkosc_y = 1;
+	 var przyspieszenie = 0;
+
+	 var paletka_lewy_gorny_x = 25;
+	 var paletka_lewy_gorny_y = plansza_gry.height/2 - 30;
+	 var paletka_rozmiar_x = 15;
+	 var paletka_rozmiar_y = 60;
+	 var paletka_predkosc_y = 2;
+	 
+	 var czy_klawisz_gora_wcisniety = false;
+	 var czy_klawisz_dol_wcisniety = false;
+	 
+	 var wynik = 0;
+	 var rekord = 0;
+
+	 RysujPaletke();
+	 RysujPilke();
+	
+	 document.addEventListener("keydown", UstawWcisnietyKlawisz, false);
+	 document.addEventListener("keyup", UstawPodniesionyKlawisz, false);
+	 
+
+	 function GenerujLosowaPredkosc() 
+	 {
+		var random_value = Math.random();
+		random_value = 5 + Math.random() * 5; <!-- losowa liczba od 5 do 10
+		random_value = random_value / 10;  <!-- losowa liczba do 1/2 do 1
+		return random_value;
+	 }
+	 
+	 function UstawPilke() 
+	 {
+		pilka_srodek_x = plansza_gry.width - 40;
+		pilka_srodek_y = plansza_gry.height / 2;
+	 }
+
+	 function UstawLosowePredkosci() 
+	 {
+		pilka_predkosc_x = GenerujLosowaPredkosc();
+		pilka_predkosc_y = GenerujLosowaPredkosc();
+		var random_value  = Math.random();
+		if ( random_value < 0.5 ) 
+		   pilka_predkosc_y = -1 * pilka_predkosc_y;
+	 }
+
+	 function StartGry() 
+	 {
+												<!-- tutaj ustawiać poczatkowe wartosci zmiennych ktore sie pozniej modyfikuja
+													<!-- np. predkosc_paletki,pilki itp
+		
+		setInterval(Animacja, 10);
+		wynik = 0;
+		document.getElementById("punkty").innerHTML = "Wynik: " + wynik;
+		document.getElementById("info").innerHTML = "Daj z siebie wszystko!"; 
+		UstawPilke();
+		UstawLosowePredkosci()
+		przyspieszenie = 0;
+	 }
+	 
+	 function RysujPilke() 
+	 {
+		rysowanie.beginPath();
+		rysowanie.arc(pilka_srodek_x, pilka_srodek_y, pilka_promien, 0, 2*Math.PI);
+		rysowanie.fillStyle = "blue";
+		rysowanie.fill();
+		rysowanie.strokeStyle = "black";
+		rysowanie.stroke(); 
+		rysowanie.closePath();
+	 }
+	 
+	 function RysujPaletke() 
+	 {
+		rysowanie.beginPath();
+		rysowanie.rect(paletka_lewy_gorny_x, paletka_lewy_gorny_y, 
+					   paletka_rozmiar_x, paletka_rozmiar_y);
+		rysowanie.fillStyle = "green";
+		rysowanie.fill();
+		rysowanie.strokeStyle = "black";
+		rysowanie.stroke();
+		rysowanie.closePath();
+	 }
+
+	 function Animacja() 
+	 {
+		rysowanie.clearRect(0, 0, plansza_gry.width, plansza_gry.height);
+		RysujPaletke();
+		RysujPilke();
+
+		if ( pilka_srodek_x - pilka_promien > paletka_lewy_gorny_x + paletka_rozmiar_x) 
+		{ 
+		   pilka_srodek_x -= pilka_predkosc_x;
+		   pilka_srodek_y += pilka_predkosc_y;
+		   
+		   if (pilka_srodek_y+pilka_promien > plansza_gry.height)
+			  pilka_predkosc_y = -1 * pilka_predkosc_y; 
+		   if (pilka_srodek_y-pilka_promien < 0)
+			  pilka_predkosc_y = -1 * pilka_predkosc_y; 
+		   
+		   if (czy_klawisz_gora_wcisniety == true) 
+		   {
+			  paletka_lewy_gorny_y -=  paletka_predkosc_y;
+			  if (paletka_lewy_gorny_y < 0)
+				 paletka_lewy_gorny_y = 0;
+		   }
+		   if (czy_klawisz_dol_wcisniety == true) 
+		   {
+			  paletka_lewy_gorny_y +=  paletka_predkosc_y;
+			  if (paletka_lewy_gorny_y + paletka_rozmiar_y > plansza_gry.height)
+				 paletka_lewy_gorny_y = plansza_gry.height - paletka_rozmiar_y;
+		   }
+		   return;
+		}
+		
+		if (pilka_srodek_y - pilka_promien <= paletka_lewy_gorny_y + paletka_rozmiar_y)
+		   if (pilka_srodek_y + pilka_promien >= paletka_lewy_gorny_y) 
+		   {
+			  ++wynik;
+			  document.getElementById("punkty").innerHTML = "Wynik: " + wynik;
+			  UstawPilke();
+			  UstawLosowePredkosci();
+			  przyspieszenie = przyspieszenie + 0.2
+			  
+																					<!-- zmienijszyć paletke / pilke
+			  
+			  pilka_predkosc_x = pilka_predkosc_x + przyspieszenie*1.5;
+			  
+			  if (pilka_predkosc_y > 0)
+				  pilka_predkosc_y = pilka_predkosc_y + przyspieszenie;
+			  else
+				  pilka_predkosc_y = pilka_predkosc_y - przyspieszenie;
+			  
+			  return;
+		}
+		document.getElementById("info").innerHTML = "Koniec gry! <br\> Spróbuj jeszcze raz!";
+		
+		if(rekord < wynik)
+			rekord = wynik;
+		document.getElementById("rekord").innerHTML = "Twój dotychczasowy rekord: " + rekord;
+	 }
+
+	 function UstawWcisnietyKlawisz(zdarzenie) 
+	 {
+		if (zdarzenie.key == "ArrowUp") {
+			czy_klawisz_gora_wcisniety = true;
+		}
+		if (zdarzenie.key == "ArrowDown") {
+			czy_klawisz_dol_wcisniety = true;
+		}
+	 }
+	 function UstawPodniesionyKlawisz(zdarzenie) 
+	 {
+		if (zdarzenie.key == "ArrowUp") {
+			czy_klawisz_gora_wcisniety = false;
+		}
+		if (zdarzenie.key == "ArrowDown") {
+			czy_klawisz_dol_wcisniety = false;
+		}
+	 } 
+
+	</script>
+	
+</body>
+</html>
